@@ -413,7 +413,9 @@ pub const DEVICES: &[Device] = &[
         // factory amp presets and bank 7 the templates ("Quick Start", "Parallel Spans",
         // "SNP:4-Amp Spill") — the Floor's layout, so the Floor's names are used. An LT backup
         // (2026-10-18) agrees on FACTORY 1, FACTORY 2 and TEMPLATES; its owner had renamed
-        // banks 2..6, so the USER names are still the Floor's, not the LT's own.
+        // banks 2..6. A third LT (2026-11-15) shows `USER 2`..`USER 5` unrenamed in its own
+        // Setlist menu, so those are the LT's defaults too [solid]; its bank 2 was renamed, so
+        // `USER 1` is inferred from the sequence.
         setlists: Some(&[
             "FACTORY 1",
             "FACTORY 2",

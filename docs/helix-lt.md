@@ -87,7 +87,7 @@ Reading the loaded preset (8326 bytes, declared length matched):
 > and which preset key `1` being populated says independently. If you have an LT, `fretwire pull`
 > prints the slot list and settles it.
 
-## Setlists  [arity solid; end-bank names solid, USER names not corroborated]
+## Setlists  [arity solid; names solid but `USER 1`, which is inferred]
 
 Browsing banks 0, 1, 2, 6, 7 and 8 (3–5 were not reported, and it is not recorded whether they were
 browsed and dropped in editing or never browsed):
@@ -114,6 +114,17 @@ up and disagrees, this is the field to fix.
 **Update (2026-10-18):** an LT backup turned up. It has eight setlists of 128, and `FACTORY 1`,
 `FACTORY 2` and `TEMPLATES` match. Its owner had renamed banks 2–6, so it can't confirm or rule out
 `USER 1`…`USER 5`.
+
+**Update (2026-11-15):** a third owner's LT (fw 3.80.0) shows, in its own Setlist menu, `FACTORY 1`,
+`FACTORY 2`, then one setlist the owner had renamed, then **`USER 2`, `USER 3`, `USER 4`, `USER 5`**
+and `TEMPLATES`, none of those renamed. So `USER 2`…`USER 5` are the LT's own defaults [solid], and
+`USER 1` for bank 2 follows from the sequence [inferred — bank 2 itself was renamed]. The names in
+`DEVICES` stand.
+
+fretwire does not read setlist names from the pedal: `setlists`, `presets` and the GUI print the
+names in `DEVICES`, so a renamed setlist shows under its default name (here, `USER 1` for the
+owner's renamed bank 2). The pedal's own names reach fretwire only through a backup's
+`L6Setlist` streams.
 
 ## Owner captures (2026-10-18)
 
@@ -245,7 +256,7 @@ Not exercised: `save`, `rename`, `restore`, `restore-device`, IR upload, rename 
   save have not been compared against an LT's own bytes; only op 42 and op 46 have. Not needed for
   `Verified` (see the top), but it is the only way to spot an LT-specific byte if one ever turns up.
 - **Persistent writes** — save, rename, restore and IR writes — on an LT.
-- **The `USER 1`…`USER 5` setlist names** on an LT whose owner never renamed them.
+- **`USER 1` on an unrenamed bank 2.** Inferred from `USER 2`…`USER 5` (see [Setlists](#setlists)).
 
 ## Reproducing
 

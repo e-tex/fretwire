@@ -13,8 +13,11 @@ read back identical to the preset as loaded. That is the Rack's route (`P21`, th
 confirmed live on the unit), so the entry is `Support::Verified`. `backup-device` also ran, its
 first recorded run on any Helix: 551 presets and 173 settings in about a minute. Two things seen:
 a swap loads the new model's defaults, Trails and the paired cab included, and `delete-block` moves
-the focused block (`6 → 98`) to the emptied slot. Still open on the LT: saves and other flash writes,
-an HX Edit capture of the ordinary edits, and the `USER n` setlist names. `docs/helix-lt.md`.
+the focused block (`6 → 98`) to the emptied slot. The same LT's Setlist menu shows `USER 2`…`USER 5`
+unrenamed, the first LT to confirm the defaults in `DEVICES` (`USER 1` follows from the sequence;
+the owner had renamed bank 2). That also showed fretwire printing a renamed setlist under its
+default name: setlist names come from `DEVICES`, never from the pedal. Still open on the LT: saves
+and other flash writes, and an HX Edit capture of the ordinary edits. `docs/helix-lt.md`.
 
 **No more "outside path B" badge (2026-11-07, issue #34).** A Helix LT owner's factory preset
 GlitchVerb has its split and join one column apart, with B-row blocks to the left, between and to
