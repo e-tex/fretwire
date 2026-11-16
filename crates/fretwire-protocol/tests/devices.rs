@@ -363,6 +363,10 @@ fn the_lt_shares_the_floors_data_class_without_inheriting_its_device_id() {
     assert_eq!(lt.preset_device_id, Some(0x0021_0004));
     assert_ne!(lt.preset_device_id, floor.preset_device_id);
 
+    // The Floor's builders, confirmed live on an owner's LT (2026-11-15) — the Rack's route.
+    assert_eq!(lt.support, Support::Verified);
+    assert!(lt.support.caveat().is_none());
+
     // Both stamp "P21"; the lookup keeps resolving it to the Floor, which is listed first.
     assert_eq!(
         Device::by_model_code("P21").map(|d| d.pid),

@@ -9,15 +9,22 @@ Edit captures** from part of the capture round (`docs/helix-capture-round.md`: A
 Their results are in [Owner captures (2026-10-18)](#owner-captures-2026-10-18) below; the
 `.pcapng` files, the backup and the reassembled streams stay local (`captures/helix-lt/`, ignored).
 
+A third owner (2026-11-15, fw **3.80.0**, build `7d01f5e`, fretwire 0.6.2 at `941efd0`, Arch
+Linux, reference data from HX Edit 3.82) ran fretwire's **edits** on their unit for the first time.
+Results in [Edits on an owner's unit (2026-11-15)](#edits-on-an-owners-unit-2026-11-15).
+
 **Bottom line: the LT needs no protocol change.** The handshake, the preset read, the snapshot
 decode, and the setlist and preset-list browses all work unmodified once the PID is in the table.
 The catalogue resolved every block and parameter of the loaded preset by name.
 
-**Nothing has been written to this device** — no edit, no save, no backup, no restore. That is why
-the entry is `Support::Reported` rather than `Support::Verified`: the reads are real traffic checked
-against real parsers, but `Verified` means the *edit builders* have been reconciled against a unit's
-own bytes too, and here they have not. (The PR proposed `Support::Untested`; that tier means "only
-the USB IDs are known", which undersells this survey. `Reported` was added on 2026-08-20.)
+**Edits work, so the entry is `Support::Verified`** (2026-11-15), by the route the Helix Rack took
+(`docs/helix-rack.md`): the LT reports `P21`, so it takes the Floor's builders, which were checked
+byte-for-byte against a Floor's own traffic, and the LT accepted them. Parameter sets on both DSPs,
+bypass, add, delete, swap, moves and snapshot and split edits were each confirmed on the unit's
+screen and by a re-read, and each was undone by a revert that read back identical to the preset as
+loaded. No HX Edit capture of those edits on an LT exists; see [Not observed](#not-observed).
+(The entry went in as `Support::Reported` on 2026-08-22: the first survey's reads were real traffic
+checked against real parsers, but nothing had been written to an LT yet.)
 
 ## USB identity  [solid]
 
@@ -176,20 +183,80 @@ The device then pushed `{98: 30, 51: 0}`: slot 30 is now Path 2B's input, starti
 `edit::remove_split`. Not yet seen: op 46 on DSP 1, from `SAB`, and the inverse (dragging the
 split back up).
 
+## Edits on an owner's unit (2026-11-15)
+
+### Reads, again  [solid]
+
+On fw 3.80.0 everything above held: handshake `P21`, 2 DSPs, 8 snapshots, banks `0`–`7` of 128 each
+and bank `8` refused with `-3`, and a `pull` whose stream matched its declared length. The preset's
+key `7 → 35` read `0x03800020` with build `7d01f5e`, the values the 2026-10-18 LT and the Floor
+carry on 3.80. A factory template read in place (op 4) still carries the firmware it was built on
+(`0x03010020`, build `5a8c6f1`) and is restamped `0x03800020` when loaded.
+
+### Device backup  [solid]
+
+`fretwire backup-device` ran in about a minute: 1024 slots listed, 551 presets stored and 473 empty
+slots left out (as HX Edit does), 173 settings, and no IRs, favorites or user defaults (the unit had
+none to report). `backup-show` reads the file back. Not yet restored onto an LT.
+
+### Writes, edit buffer only  [solid]
+
+With **Stereo Mixer** loaded (TEMPLATES `05A`, `goto 16 7`), each step was a single command,
+followed by `dump-raw` and `diff-stream` against the previous step, and confirmed on the LT's
+screen before the next. Every group ended with `revert`, and each revert read back identical to the
+preset as loaded.
+
+| command | change read back | on the LT's screen |
+|---|---|---|
+| `set 5 0 0.8` | `/0/22[5]/20/11/4[0]` 0.5 → 0.8 | US Deluxe Nrm Drive 8.0 |
+| `set 25 0 0.6` | `/1/22[5]/20/11/4[0]` 0.52 → 0.6 | Ampeg SVT Nrm Drive 6.0, on DSP 2 |
+| `bypass 2 on`, `bypass 22 on` | each block's `10` true → false, and snapshot 1's state for it | both Deluxe Comps dimmed |
+| `add-block 6 80` | a Simple Delay (mono) in slot 6, at its defaults | the delay after the amp |
+| `trails 6 on` | that block's Trails false → true | Trails On |
+| `swap 6 246` | model 80 → 246 (Plate), at the Plate's defaults | Plate, Trails Off |
+| `delete-block 6` | slot 6 empty | the slot empty |
+| `set-cab 5 0 3.0` | the paired cab's Distance 2 → 3 | Distance 3.00" |
+| `swap 5 21 53` | amp 39 → 21 (Essex A30), cab 49 → 53 (2x12 Blue Bell), both at defaults | Essex A30, 2x12 Blue Bell |
+| `move 3 6` | the Simple EQ from slot 3 to slot 6 | EQ after the amp |
+| `move-to-row 6 parallel` | the EQ from slot 6 to slot 16 (row B) | EQ on Path 1B |
+| `snapshot 1` | active snapshot `10 → 6` 0 → 1 | snapshot indicator 2 |
+| `rename-snapshot 1 "FW TEST"` | snapshot 2's name, and its `14` false → true | not checked: the owner could not find where the LT shows it |
+| `split-type ab` | DSP 1's split 257 → 256, its Balance A/B replaced by Route To | Split A/B |
+| `revert` | identical to the preset as loaded | edited marker gone |
+
+Also seen:
+
+- **A swap loads the new model's defaults**, Trails and the paired cab's settings included. The
+  Plate came in with Trails off after the delay's was on; the cab's Distance 3.0" became the Blue
+  Bell's 1.0". The screen agreed both times.
+- **`delete-block` moves the focused block** (`6 → 98`) to the emptied slot, and **a selection made
+  with the joystick** shows up in the next read as a change to the same key.
+- **A snapshot switch does not mark the preset edited**; every other step did.
+- `snapshot 1` also changed `/10/10[1]/11` 0 → 2, and the rename `/10/10[1]/14` false → true
+  [hypothesis: a custom-name flag]. Neither is decoded.
+
+Not exercised: `save`, `rename`, `restore`, `restore-device`, IR upload, rename and delete,
+`before-split` (Stereo Mixer's splits sit before column 0), `node-pos` (the op-21 write; see
+`docs/safety.md`), favorites (none on the unit), and moves between DSPs, which fretwire refuses.
+
 ## Not observed
 
-- **Every write path but op 42 and op 46.** Set-value, bypass, swap, add, delete and save have not
-  been compared against an LT's own bytes, so the entry stays `Reported`.
+- **An HX Edit capture of the ordinary edits on an LT.** Set-value, bypass, swap, add, delete and
+  save have not been compared against an LT's own bytes; only op 42 and op 46 have. Not needed for
+  `Verified` (see the top), but it is the only way to spot an LT-specific byte if one ever turns up.
+- **Persistent writes** — save, rename, restore and IR writes — on an LT.
+- **The `USER 1`…`USER 5` setlist names** on an LT whose owner never renamed them.
 
 ## Reproducing
 
 With the LT connected and the udev rule installed:
 
 ```
-fretwire detect                 # Helix LT: present (reported working, unverified)
+fretwire detect                 # Helix LT: present
 fretwire connect                # handshake OK — device reports "P21"
 fretwire pull                   # the preset above, blocks and params resolved
 fretwire setlists               # 8 setlists
 fretwire presets 7              # the templates bank
 fretwire dump-raw lt.raw        # then: fretwire tree lt.raw
+fretwire goto 16 7              # Stereo Mixer; then e.g. `set 5 0 0.8`, `pull`, `revert`
 ```

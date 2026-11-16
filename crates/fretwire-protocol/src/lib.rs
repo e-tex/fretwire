@@ -93,18 +93,19 @@ pub enum Support {
     /// Wire traffic from this exact device has been observed and reconciled against our builders —
     /// or the device shares a verified sibling's model code, so it takes builders already checked
     /// that way, and edits from them have been confirmed on the unit itself. The second route is
-    /// the Helix Rack's: `P21` like the Floor, edited live on both DSPs (issue #24).
+    /// the Helix Rack's and the Helix LT's: `P21` like the Floor, edited live on both DSPs
+    /// (issue #24; `docs/helix-lt.md`).
     Verified,
     /// Someone has run the editor against one and reported back, but the device is not yet fully
     /// described — so some field below is still honestly unknown. Sits between the other two on
     /// purpose: "a user has this working" is real information, and calling it [`Support::Untested`]
     /// understates it, while [`Support::Verified`] promises a device we can describe completely.
     ///
-    /// It does **not** imply we hold no traffic. The Helix LT sits here with its reads surveyed on
-    /// real hardware — what keeps it out of `Verified` is that no edit has ever been sent to one —
-    /// and the POD Go worked its way through this tier and out the top as its owner sent captures
-    /// (issue #15). The tier tracks how completely we know the device, not how much evidence we
-    /// have.
+    /// It does **not** imply we hold no traffic. The Helix LT sat here for three months with its
+    /// reads surveyed on real hardware — what kept it out of `Verified` was that no edit had been
+    /// sent to one — and the POD Go worked its way through this tier and out the top as its owner
+    /// sent captures (issue #15). The tier tracks how completely we know the device, not how much
+    /// evidence we have.
     Reported,
     /// Only the USB IDs are known. The device is in the HX family and very probably speaks the
     /// same protocol, but nothing has been checked against real traffic from one.
@@ -191,22 +192,18 @@ pub struct Device {
 ///
 /// The HX Stomp, Helix Floor and POD Go are [`Support::Verified`] — the handshake is
 /// byte-identical across them and every edit builder reproduces each device's own wire bytes. The
-/// Helix Rack is too, by the second route [`Support::Verified`] allows (see below). The
-/// POD Go is the interesting one: it is not even marketed as an HX device, and it still speaks the
-/// identical protocol (issue #15).
+/// Helix Rack and Helix LT are too, by the second route [`Support::Verified`] allows (see below).
+/// The POD Go is the interesting one: it is not even marketed as an HX device, and it still speaks
+/// the identical protocol (issue #15).
 ///
-/// Two are [`Support::Reported`], for different reasons, which is the point of the tier being
-/// evidential rather than a ranking: the **Helix LT** was surveyed on real hardware (reads and
-/// browses reconcile; no edit has been sent to one), while the **HX Stomp XL** is known through its
-/// owner — what they can run, read off the panel, and two preset streams they captured, which our
-/// reader reconciles. Neither has an *edit* reconciled against our builders byte-for-byte, which is
-/// what `Verified` means here, and in both cases every field we did not observe stays `None` rather
-/// than being copied from a sibling: the LT reports the Floor's `P21` and still does not inherit its
-/// `preset_device_id`, and the XL's own `P36` said nothing about its DSP or snapshot counts — those
-/// two came from the captures, not from the code (its `preset_device_id` arrived later still, out
-/// of an owner's backup header).
+/// The **HX Stomp XL** is [`Support::Reported`]: it is known through its owner — what they can run,
+/// read off the panel, and two preset streams they captured, which our reader reconciles. No *edit*
+/// has been reconciled against our builders byte-for-byte, which is what `Verified` means here, and
+/// every field we did not observe stays `None` rather than being copied from a sibling: the XL's
+/// own `P36` said nothing about its DSP or snapshot counts — those two came from the captures, not
+/// from the code (its `preset_device_id` arrived later still, out of an owner's backup header).
 ///
-/// The **HX Effects** reached [`Support::Reported`] the same way, by outcome alone: its `lsusb`
+/// The **HX Effects** reached [`Support::Reported`] by outcome alone: its `lsusb`
 /// line arrived first and made it findable, and an owner has since said it works. That report is
 /// the whole of the evidence — no capture, no session, no panel readings — so every other field is
 /// still empty.
@@ -216,6 +213,13 @@ pub struct Device {
 /// surveyed one (issue #24): it reports the Floor's `P21`, every field was read off the unit or its
 /// backup, and the Floor's verified edit builders worked on it live, which made it
 /// [`Support::Verified`] without a capture of its own. The `Untested` tier is empty again.
+///
+/// The **Helix LT** took the same route from [`Support::Reported`]. Its first survey (PR #3) read
+/// and browsed a unit but sent it no edit; its `preset_device_id` and bank size came later, from a
+/// second owner's backup and screen, not from the Floor. A third owner then ran the Floor's
+/// builders on one live (2026-11-15, fw 3.80): sets on both DSPs, bypass, add, delete, swaps,
+/// moves, snapshot and split edits, each confirmed on its screen and by a re-read, each reverted to
+/// an identical preset (`docs/helix-lt.md`).
 ///
 /// The **POD Go Wireless** is [`Support::Verified`] by the same second route: its own USB id, but
 /// the POD Go's `P34`, and the POD Go's builders confirmed live on an owner's unit.
@@ -424,12 +428,12 @@ pub const DEVICES: &[Device] = &[
         // Banks of four: the owner read `21D` off the LT's screen with numbering set to
         // `01A`-`32D` (setting 27 off). [solid — 2026-10-18, docs/helix-lt.md]
         presets_per_bank: Some(4),
-        // Handshake, preset read, setlist and preset-list browse are all reconciled against a
-        // physical LT, but no edit has ever been sent to one. That is more than `Untested` ("only
-        // the USB IDs are known") describes — the reads are real traffic, checked against real
-        // parsers — and less than `Verified`, which means the *builders* have been reconciled too.
         mic_ir_cabs: None,
-        support: Support::Reported,
+        // The Rack's route: `P21`, so the Floor's byte-verified builders, and an owner's LT
+        // accepted them live — sets on both DSPs, bypass, add, delete, swaps, moves, snapshot and
+        // split edits, each confirmed on its screen and by a re-read, each reverted to an identical
+        // preset. [solid — 2026-11-15, fw 3.80, docs/helix-lt.md]
+        support: Support::Verified,
     },
     Device {
         pid: PID_HX_STOMP_XL,

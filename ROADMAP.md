@@ -663,7 +663,9 @@ real session.
       invariants, including that every table entry has a matching udev rule.
       **Still open on the XL:** how many setlists it has. Its banking was answered on 2026-08-21
       by the owner reading `01A`-`32D` off the panel, and its model code `P36` by their handshake log.
-- [x] **Helix LT — PID `0x424A`, `Reported` (2026-08-22, PR #3).** Surveyed on a contributor's
+- [x] **Helix LT — PID `0x424A`, `Reported` (2026-08-22, PR #3); `Verified` (2026-11-15).** The
+      Floor's edit builders worked live on an owner's LT (fw 3.80), confirmed on its screen and by a
+      re-read; see `docs/helix-lt.md`. Surveyed on a contributor's
       physical unit: handshake, preset read, snapshot decode and the setlist/preset browses all work
       **unmodified** once the PID is in the table, so the LT needs no protocol change. It stamps the
       Floor's `P21` and carries the Floor's geometry (2 DSPs, 8 snapshots, 8 banks of 128), so

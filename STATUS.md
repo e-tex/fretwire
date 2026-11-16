@@ -2,6 +2,20 @@
 
 _Snapshot: 2026-07-05. Target: an independent Linux editor for the HX Stomp, in Rust._
 
+**The Helix LT goes Verified (2026-11-15).** An LT owner on fw 3.80.0 ran fretwire's edits on
+their unit, the first ever sent to an LT. With Stereo Mixer (TEMPLATES `05A`) loaded, each step was
+one command, a `dump-raw` and `diff-stream` against the step before, and a look at the LT's screen:
+`set` on both DSPs, `bypass`, `add-block`, `trails`, `swap` (a delay to a Plate, and an amp with its
+cab), `delete-block`, `set-cab`, `move`, `move-to-row`, `snapshot`, `rename-snapshot` and
+`split-type`. Each changed exactly the paths it should; the screen agreed every time but for the
+snapshot rename, which the owner could not find on the panel. Every group ended in a `revert` that
+read back identical to the preset as loaded. That is the Rack's route (`P21`, the Floor's builders,
+confirmed live on the unit), so the entry is `Support::Verified`. `backup-device` also ran, its
+first recorded run on any Helix: 551 presets and 173 settings in about a minute. Two things seen:
+a swap loads the new model's defaults, Trails and the paired cab included, and `delete-block` moves
+the focused block (`6 → 98`) to the emptied slot. Still open on the LT: saves and other flash writes,
+an HX Edit capture of the ordinary edits, and the `USER n` setlist names. `docs/helix-lt.md`.
+
 **No more "outside path B" badge (2026-11-07, issue #34).** A Helix LT owner's factory preset
 GlitchVerb has its split and join one column apart, with B-row blocks to the left, between and to
 the right, and on the pedal all three are on path B. We marked the outer two "outside path B" on
